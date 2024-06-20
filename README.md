@@ -1,3 +1,8 @@
+- # Name - Hardik Advani
+- # Enrollment No - 22113055
+- # Branch - Production and Industrial Engineering
+- # Project - CPU Scheduler
+- 
 # CPU-Scheduling-Algorithms
 An implementation of various CPU scheduling algorithms in C++. The algorithms included are First Come First Serve (FCFS), Round Robin (RR), Shortest Process Next (SPN), Shortest Remaining Time (SRT), Highest Response Ratio Next (HRRN), Feedback (FB) and Aging.
 
@@ -129,4 +134,6 @@ entered as 2-4 means Round Robin with q=4. Also, policy 8-1 means Aging with q=1
     2- Arrival Time\
     3- Priority
 - Processes are assumed to be sorted based on the arrival time. If two processes have the same arrival time, then the one with the lower priority is assumed to arrive first.
+
+
 

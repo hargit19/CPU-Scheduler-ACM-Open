@@ -20,6 +20,7 @@ This C++ program implements several CPU scheduling algorithms. Included algorith
   - [Installation]
   - [Input Format]
   - [TestCases Implemented]
+  - [Takeaways]
 
 ## Algorithms Used in the code
 
@@ -105,6 +106,10 @@ This C++ program implements several CPU scheduling algorithms. Included algorith
 
 ![Screenshot 2024-06-20 204250](https://github.com/hargit19/CPU-Scheduler-ACM-Open/assets/127594594/97f43fe3-61a5-405b-8130-91ee6bd9f78d)
 
+### Takeaways
+- Gain in-depth knowledge of various CPU scheduling algorithms, including their advantages, disadvantages, and use cases.
+- Learn how different algorithms handle processes and their impact on system performance.
+- Gain insights into operating system concepts and how CPU scheduling is managed at the OS level.
 
 
 

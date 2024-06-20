@@ -5,10 +5,6 @@
 
 using namespace std;
 
-/** This file handles parsing the data we are going to work with **/
-/** It also holds all the global variables we parse into         **/
-
-
 string operation;
 int last_instant, process_count;
 vector<pair<char, int>> algorithms;
@@ -16,8 +12,6 @@ vector<tuple<string,int,int>> processes;
 vector<vector<char>>timeline;
 unordered_map<string,int>processToIndex;
 
-
-//Results
 
 vector<int>finishTime;
 vector<int>turnAroundTime;
@@ -78,4 +72,4 @@ void parse()
 }
 
 
-#endif // PARSER_H_INCLUDED
+#endif 

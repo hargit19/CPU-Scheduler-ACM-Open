@@ -1,342 +1,548 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <queue>
-#include <tuple>
-#include <algorithm>
-#include <string>
+#include <bits/stdc++.h>
+#include "parser.h"
+
+#define all(v) v.begin(), v.end()
+
 using namespace std;
 
-#define TRACE_MODE "trace"
-#define SHOW_STATS "stats"
 
-vector<vector<char>> timeline;
-vector<int> finish_time;
-vector<int> turnaround_time;
-vector<double> norm_turnaround;
-vector<int> wait_time;
+const string ALGORITHMS[9] = {"", "FCFS", "RR-", "SPN", "SRT", "HRRN", "FB-1", "FB-2i", "AGING"};
+const string TRACE = "trace";
+const string SHOW_STATISTICS = "stats";
 
-int process_count;
-int max_time;
 
-vector<tuple<string, int, int>> processes;
-vector<string> processID_list;
 
-bool parseFile(string file_name)
+
+bool sortByServiceTime(const tuple<string, int, int> &a, const tuple<string, int, int> &b)
 {
-    ifstream infile(file_name);
-    if (!infile)
-        return false;
-
-    string processID;
-    int arrivalTime, serviceTime;
-
-    while (infile >> processID >> arrivalTime >> serviceTime)
-    {
-        processes.push_back(make_tuple(processID, arrivalTime, serviceTime));
-        processID_list.push_back(processID);
-    }
-    infile.close();
-    process_count = processes.size();
-    return true;
+    return (get<2>(a) < get<2>(b));
+}
+bool sortByArrivalTime(const tuple<string, int, int> &a, const tuple<string, int, int> &b)
+{
+    return (get<1>(a) < get<1>(b));
 }
 
-void reset_timeline()
-{
-    timeline = vector<vector<char>>(max_time, vector<char>(process_count, ' '));
-    finish_time = vector<int>(process_count, 0);
-    turnaround_time = vector<int>(process_count, 0);
-    norm_turnaround = vector<double>(process_count, 0.0);
-    wait_time = vector<int>(process_count, 0);
-}
-
-void printResults()
-{
-    cout << "Timeline:\n";
-    for (int i = 0; i < process_count; i++)
-        cout << get<0>(processes[i]) << "\t";
-    cout << "\n";
-    for (int i = 0; i < max_time; i++)
-    {
-        for (int j = 0; j < process_count; j++)
-            cout << timeline[i][j] << "\t";
-        cout << "\n";
-    }
-}
-
-void printTrace()
-{
-    cout << "Trace:\n";
-    for (int i = 0; i < max_time; i++)
-    {
-        cout << i + 1 << ":\t";
-        for (int j = 0; j < process_count; j++)
-            cout << timeline[i][j] << "\t";
-        cout << "\n";
-    }
-}
-
-void printStats()
-{
-    double total_turnaround = 0;
-    double total_norm_turnaround = 0;
-    for (int i = 0; i < process_count; i++)
-    {
-        total_turnaround += turnaround_time[i];
-        total_norm_turnaround += norm_turnaround[i];
-    }
-
-    cout << "Stats:\n";
-    cout << "Average Turnaround Time: " << total_turnaround / process_count << "\n";
-    cout << "Average Normalized Turnaround Time: " << total_norm_turnaround / process_count << "\n";
-}
-
-void markWaitTime()
-{
-    for (int i = 0; i < process_count; i++)
-        wait_time[i] = turnaround_time[i] - get<2>(processes[i]);
-}
-
-int getProcessArrivalTime(tuple<string, int, int> &proc)
-{
-    return get<1>(proc);
-}
-
-int getProcessServiceTime(tuple<string, int, int> &proc)
-{
-    return get<2>(proc);
-}
-
-bool compareArrivalTime(tuple<string, int, int> &a, tuple<string, int, int> &b)
-{
-    return get<1>(a) < get<1>(b);
-}
-
-bool compareServiceTime(tuple<string, int, int> &a, tuple<string, int, int> &b)
-{
-    return get<2>(a) < get<2>(b);
-}
-
-bool compareResponseRatio(tuple<string, double, int> &a, tuple<string, double, int> &b)
+bool descendingly_by_response_ratio(tuple<string, double, int> a, tuple<string, double, int> b)
 {
     return get<1>(a) > get<1>(b);
 }
 
-void firstComeFirstServe()
-{
-    queue<int> readyQueue;
-    int currentIndex = 0;
-    for (int current_time = 0; current_time < max_time; current_time++)
-    {
-        while (currentIndex < process_count && getProcessArrivalTime(processes[currentIndex]) <= current_time)
-        {
-            readyQueue.push(currentIndex);
-            currentIndex++;
-        }
-        if (!readyQueue.empty())
-        {
-            int procIndex = readyQueue.front();
-            readyQueue.pop();
-            int arrivalTime = getProcessArrivalTime(processes[procIndex]);
-            int serviceTime = getProcessServiceTime(processes[procIndex]);
-            for (int tempTime = arrivalTime; tempTime < current_time; tempTime++)
-                timeline[tempTime][procIndex] = '.';
-            for (int tempTime = current_time; tempTime < current_time + serviceTime; tempTime++)
-                timeline[tempTime][procIndex] = '*';
-            finish_time[procIndex] = (current_time + serviceTime);
-            turnaround_time[procIndex] = (finish_time[procIndex] - arrivalTime);
-            norm_turnaround[procIndex] = (turnaround_time[procIndex] * 1.0 / serviceTime);
-            current_time += serviceTime - 1;
-        }
-    }
-    markWaitTime();
+
+
+
+bool byPriorityLevel (const tuple<int,int,int>&a,const tuple<int,int,int>&b){
+
+    if(get<0>(a)==get<0>(b))
+        return get<2>(a)> get<2>(b);
+    return get<0>(a) > get<0>(b);
 }
 
-void roundRobin(int timeQuantum)
+void clear_timeline()
 {
-    queue<pair<int, int>> readyQueue; // Pair: (processIndex, remainingTime)
-    int currentIndex = 0;
-    for (int current_time = 0; current_time < max_time; current_time++)
+    for(int i=0; i<last_instant; i++)
+        for(int j=0; j<process_count; j++)
+            timeline[i][j] = ' ';
+}
+
+string getProcessName(tuple<string, int, int> &a)
+{
+    return get<0>(a);
+}
+
+int getArrivalTime(tuple<string, int, int> &a)
+{
+    return get<1>(a);
+}
+
+int getServiceTime(tuple<string, int, int> &a)
+{
+    return get<2>(a);
+}
+
+int getPriorityLevel(tuple<string, int, int> &a)
+{
+    return get<2>(a);
+}
+
+double calculate_response_ratio(int wait_time, int service_time)
+{
+    return (wait_time + service_time)*1.0 / service_time;
+}
+
+void fillInWaitTime(){
+    for (int i = 0; i < process_count; i++)
     {
-        while (currentIndex < process_count && getProcessArrivalTime(processes[currentIndex]) <= current_time)
+        int arrivalTime = getArrivalTime(processes[i]);
+        for (int k = arrivalTime; k < finishTime[i]; k++)
         {
-            readyQueue.push({currentIndex, getProcessServiceTime(processes[currentIndex])});
-            currentIndex++;
-        }
-        if (!readyQueue.empty())
-        {
-            auto front = readyQueue.front();
-            readyQueue.pop();
-            int procIndex = front.first;
-            int remainingTime = front.second;
-            int arrivalTime = getProcessArrivalTime(processes[procIndex]);
-            for (int tempTime = current_time; tempTime < current_time + timeQuantum && tempTime < max_time; tempTime++)
-            {
-                if (remainingTime > 0)
-                {
-                    timeline[tempTime][procIndex] = '*';
-                    remainingTime--;
-                    if (remainingTime == 0)
-                    {
-                        finish_time[procIndex] = (tempTime + 1);
-                        turnaround_time[procIndex] = (finish_time[procIndex] - arrivalTime);
-                        norm_turnaround[procIndex] = (turnaround_time[procIndex] * 1.0 / getProcessServiceTime(processes[procIndex]));
-                    }
-                }
-            }
-            if (remainingTime > 0)
-                readyQueue.push({procIndex, remainingTime});
+            if (timeline[k][i] != '*')
+                timeline[k][i] = '.';
         }
     }
-    markWaitTime();
+}
+
+void firstComeFirstServe()
+{
+    int time = getArrivalTime(processes[0]);
+    for (int i = 0; i < process_count; i++)
+    {
+        int processIndex = i;
+        int arrivalTime = getArrivalTime(processes[i]);
+        int serviceTime = getServiceTime(processes[i]);
+
+        finishTime[processIndex] = (time + serviceTime);
+        turnAroundTime[processIndex] = (finishTime[processIndex] - arrivalTime);
+        normTurn[processIndex] = (turnAroundTime[processIndex] * 1.0 / serviceTime);
+
+        for (int j = time; j < finishTime[processIndex]; j++)
+            timeline[j][processIndex] = '*';
+        for (int j = arrivalTime; j < time; j++)
+            timeline[j][processIndex] = '.';
+        time += serviceTime;
+    }
+}
+
+void roundRobin(int originalQuantum)
+{
+    queue<pair<int,int>>q;
+    int j=0;
+    if(getArrivalTime(processes[j])==0){
+        q.push(make_pair(j,getServiceTime(processes[j])));
+        j++;
+    }
+    int currentQuantum = originalQuantum;
+    for(int time =0;time<last_instant;time++){
+        if(!q.empty()){
+            int processIndex = q.front().first;
+            q.front().second = q.front().second-1;
+            int remainingServiceTime = q.front().second;
+            int arrivalTime = getArrivalTime(processes[processIndex]);
+            int serviceTime = getServiceTime(processes[processIndex]);
+            currentQuantum--;
+            timeline[time][processIndex]='*';
+            while(j<process_count && getArrivalTime(processes[j])==time+1){
+                q.push(make_pair(j,getServiceTime(processes[j])));
+                j++;
+            }
+
+            if(currentQuantum==0 && remainingServiceTime==0){
+                finishTime[processIndex]=time+1;
+                turnAroundTime[processIndex] = (finishTime[processIndex] - arrivalTime);
+                normTurn[processIndex] = (turnAroundTime[processIndex] * 1.0 / serviceTime);
+                currentQuantum=originalQuantum;
+                q.pop();
+            }else if(currentQuantum==0 && remainingServiceTime!=0){
+                q.pop();
+                q.push(make_pair(processIndex,remainingServiceTime));
+                currentQuantum=originalQuantum;
+            }else if(currentQuantum!=0 && remainingServiceTime==0){
+                finishTime[processIndex]=time+1;
+                turnAroundTime[processIndex] = (finishTime[processIndex] - arrivalTime);
+                normTurn[processIndex] = (turnAroundTime[processIndex] * 1.0 / serviceTime);
+                q.pop();
+                currentQuantum=originalQuantum;
+            }
+        }
+        while(j<process_count && getArrivalTime(processes[j])==time+1){
+            q.push(make_pair(j,getServiceTime(processes[j])));
+            j++;
+        }
+    }
+    fillInWaitTime();
 }
 
 void shortestProcessNext()
 {
-    vector<int> readyQueue;
-    int currentIndex = 0;
-    for (int current_time = 0; current_time < max_time; current_time++)
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq; // pair of service time and index
+    int j = 0;
+    for (int i = 0; i < last_instant; i++)
     {
-        while (currentIndex < process_count && getProcessArrivalTime(processes[currentIndex]) <= current_time)
-        {
-            readyQueue.push_back(currentIndex);
-            currentIndex++;
+        while(j<process_count && getArrivalTime(processes[j]) <= i){
+            pq.push(make_pair(getServiceTime(processes[j]), j));
+            j++;
         }
-        if (!readyQueue.empty())
+        if (!pq.empty())
         {
-            sort(readyQueue.begin(), readyQueue.end(), [&](int a, int b) { return getProcessServiceTime(processes[a]) < getProcessServiceTime(processes[b]); });
-            int procIndex = readyQueue.front();
-            readyQueue.erase(readyQueue.begin());
-            int arrivalTime = getProcessArrivalTime(processes[procIndex]);
-            int serviceTime = getProcessServiceTime(processes[procIndex]);
-            for (int tempTime = arrivalTime; tempTime < current_time; tempTime++)
-                timeline[tempTime][procIndex] = '.';
-            for (int tempTime = current_time; tempTime < current_time + serviceTime; tempTime++)
-                timeline[tempTime][procIndex] = '*';
-            finish_time[procIndex] = (current_time + serviceTime);
-            turnaround_time[procIndex] = (finish_time[procIndex] - arrivalTime);
-            norm_turnaround[procIndex] = (turnaround_time[procIndex] * 1.0 / serviceTime);
-            current_time += serviceTime - 1;
+            int processIndex = pq.top().second;
+            int arrivalTime = getArrivalTime(processes[processIndex]);
+            int serviceTime = getServiceTime(processes[processIndex]);
+            pq.pop();
+
+            int temp = arrivalTime;
+            for (; temp < i; temp++)
+                timeline[temp][processIndex] = '.';
+
+            temp = i;
+            for (; temp < i + serviceTime; temp++)
+                timeline[temp][processIndex] = '*';
+
+            finishTime[processIndex] = (i + serviceTime);
+            turnAroundTime[processIndex] = (finishTime[processIndex] - arrivalTime);
+            normTurn[processIndex] = (turnAroundTime[processIndex] * 1.0 / serviceTime);
+            i = temp - 1;
         }
     }
-    markWaitTime();
 }
 
 void shortestRemainingTime()
 {
-    vector<tuple<string, int, int>> ready_processes; // Tuple: (processID, remainingTime, startTime)
-    int currentIndex = 0;
-    for (int current_time = 0; current_time < max_time; current_time++)
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    int j = 0;
+    for (int i = 0; i < last_instant; i++)
     {
-        while (currentIndex < process_count && getProcessArrivalTime(processes[currentIndex]) <= current_time)
-        {
-            ready_processes.push_back(make_tuple(get<0>(processes[currentIndex]), getProcessServiceTime(processes[currentIndex]), current_time));
-            currentIndex++;
+        while(j<process_count &&getArrivalTime(processes[j]) == i){
+            pq.push(make_pair(getServiceTime(processes[j]), j));
+            j++;
         }
-        if (!ready_processes.empty())
+        if (!pq.empty())
         {
-            sort(ready_processes.begin(), ready_processes.end(), [&](tuple<string, int, int> &a, tuple<string, int, int> &b) { return get<1>(a) < get<1>(b); });
-            auto &proc = ready_processes.front();
-            int procIndex = distance(processID_list.begin(), find(processID_list.begin(), processID_list.end(), get<0>(proc)));
-            int arrivalTime = getProcessArrivalTime(processes[procIndex]);
-            int serviceTime = getProcessServiceTime(processes[procIndex]);
-            get<1>(proc)--;
-            timeline[current_time][procIndex] = '*';
-            if (get<1>(proc) == 0)
+            int processIndex = pq.top().second;
+            int remainingTime = pq.top().first;
+            pq.pop();
+            int serviceTime = getServiceTime(processes[processIndex]);
+            int arrivalTime = getArrivalTime(processes[processIndex]);
+            timeline[i][processIndex] = '*';
+
+            if (remainingTime == 1) // process finished
             {
-                finish_time[procIndex] = (current_time + 1);
-                turnaround_time[procIndex] = (finish_time[procIndex] - arrivalTime);
-                norm_turnaround[procIndex] = (turnaround_time[procIndex] * 1.0 / serviceTime);
-                ready_processes.erase(ready_processes.begin());
+                finishTime[processIndex] = i + 1;
+                turnAroundTime[processIndex] = (finishTime[processIndex] - arrivalTime);
+                normTurn[processIndex] = (turnAroundTime[processIndex] * 1.0 / serviceTime);
+            }
+            else
+            {
+                pq.push(make_pair(remainingTime - 1, processIndex));
             }
         }
     }
-    markWaitTime();
+    fillInWaitTime();
 }
 
 void highestResponseRatioNext()
 {
-    vector<tuple<string, double, int>> ready_processes; // Tuple: (processID, responseRatio, startTime)
-    int currentIndex = 0;
-    for (int current_time = 0; current_time < max_time; current_time++)
+
+
+    vector<tuple<string, double, int>> present_processes;
+    int j=0;
+    for (int current_instant = 0; current_instant < last_instant; current_instant++)
     {
-        while (currentIndex < process_count && getProcessArrivalTime(processes[currentIndex]) <= current_time)
-        {
-            ready_processes.push_back(make_tuple(get<0>(processes[currentIndex]), 0.0, current_time));
-            currentIndex++;
+        while(j<process_count && getArrivalTime(processes[j])<=current_instant){
+            present_processes.push_back(make_tuple(getProcessName(processes[j]), 1.0, 0));
+            j++;
         }
-        if (!ready_processes.empty())
+        
+
+
+        for (auto &proc : present_processes)
         {
-            for (auto &proc : ready_processes)
-            {
-                int procIndex = distance(processID_list.begin(), find(processID_list.begin(), processID_list.end(), get<0>(proc)));
-                int arrivalTime = getProcessArrivalTime(processes[procIndex]);
-                int serviceTime = getProcessServiceTime(processes[procIndex]);
-                get<1>(proc) = (current_time - arrivalTime + serviceTime) * 1.0 / serviceTime;
+            string process_name = get<0>(proc);
+            int process_index = processToIndex[process_name];
+            int wait_time = current_instant - getArrivalTime(processes[process_index]);
+            int service_time = getServiceTime(processes[process_index]);
+            get<1>(proc) = calculate_response_ratio(wait_time, service_time);
+        }
+
+
+        sort(all(present_processes), descendingly_by_response_ratio);
+
+        if (!present_processes.empty())
+        {
+            int process_index = processToIndex[get<0>(present_processes[0])];
+            while(current_instant<last_instant && get<2>(present_processes[0]) != getServiceTime(processes[process_index])){
+                timeline[current_instant][process_index]='*';
+                current_instant++;
+                get<2>(present_processes[0])++;
             }
-            sort(ready_processes.begin(), ready_processes.end(), compareResponseRatio);
-            auto &proc = ready_processes.front();
-            int procIndex = distance(processID_list.begin(), find(processID_list.begin(), processID_list.end(), get<0>(proc)));
-            int arrivalTime = getProcessArrivalTime(processes[procIndex]);
-            int serviceTime = getProcessServiceTime(processes[procIndex]);
-            get<2>(proc)--;
-            timeline[current_time][procIndex] = '*';
-            if (get<2>(proc) == 0)
-            {
-                finish_time[procIndex] = (current_time + 1);
-                turnaround_time[procIndex] = (finish_time[procIndex] - arrivalTime);
-                norm_turnaround[procIndex] = (turnaround_time[procIndex] * 1.0 / serviceTime);
-                ready_processes.erase(ready_processes.begin());
-            }
+            current_instant--;
+            present_processes.erase(present_processes.begin());
+            finishTime[process_index] = current_instant + 1;
+            turnAroundTime[process_index] = finishTime[process_index] - getArrivalTime(processes[process_index]);
+            normTurn[process_index] = (turnAroundTime[process_index] * 1.0 / getServiceTime(processes[process_index]));
         }
     }
-    markWaitTime();
+    fillInWaitTime();
 }
 
-void execute(string algorithm, int timeQuantum = 1)
+void feedbackQ1()
 {
-    sort(processes.begin(), processes.end(), compareArrivalTime);
-    max_time = 0;
-    for (auto &proc : processes)
-        max_time += getProcessServiceTime(proc);
-    reset_timeline();
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    unordered_map<int,int>remainingServiceTime;
+    int j=0;
+    if(getArrivalTime(processes[0])==0){
+        pq.push(make_pair(0,j));
+        remainingServiceTime[j]=getServiceTime(processes[j]);
+        j++;
+    }
+    for(int time =0;time<last_instant;time++){
+        if(!pq.empty()){
+            int priorityLevel = pq.top().first;
+            int processIndex =pq.top().second;
+            int arrivalTime = getArrivalTime(processes[processIndex]);
+            int serviceTime = getServiceTime(processes[processIndex]);
+            pq.pop();
+            while(j<process_count && getArrivalTime(processes[j])==time+1){
+                    pq.push(make_pair(0,j));
+                    remainingServiceTime[j]=getServiceTime(processes[j]);
+                    j++;
+            }
+            remainingServiceTime[processIndex]--;
+            timeline[time][processIndex]='*';
+            if(remainingServiceTime[processIndex]==0){
+                finishTime[processIndex]=time+1;
+                turnAroundTime[processIndex] = (finishTime[processIndex] - arrivalTime);
+                normTurn[processIndex] = (turnAroundTime[processIndex] * 1.0 / serviceTime);
+            }else{
+                if(pq.size()>=1)
+                    pq.push(make_pair(priorityLevel+1,processIndex));
+                else
+                    pq.push(make_pair(priorityLevel,processIndex));
+            }
+        }
+        while(j<process_count && getArrivalTime(processes[j])==time+1){
+                pq.push(make_pair(0,j));
+                remainingServiceTime[j]=getServiceTime(processes[j]);
+                j++;
+        }
+    }
+    fillInWaitTime();
+}
 
-    if (algorithm == "FCFS")
+void feedbackQ2i()
+{
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq; 
+    unordered_map<int,int>remainingServiceTime;
+    int j=0;
+    if(getArrivalTime(processes[0])==0){
+        pq.push(make_pair(0,j));
+        remainingServiceTime[j]=getServiceTime(processes[j]);
+        j++;
+    }
+    for(int time =0;time<last_instant;time++){
+        if(!pq.empty()){
+            int priorityLevel = pq.top().first;
+            int processIndex =pq.top().second;
+            int arrivalTime = getArrivalTime(processes[processIndex]);
+            int serviceTime = getServiceTime(processes[processIndex]);
+            pq.pop();
+            while(j<process_count && getArrivalTime(processes[j])<=time+1){
+                    pq.push(make_pair(0,j));
+                    remainingServiceTime[j]=getServiceTime(processes[j]);
+                    j++;
+            }
+
+            int currentQuantum = pow(2,priorityLevel);
+            int temp = time;
+            while(currentQuantum && remainingServiceTime[processIndex]){
+                currentQuantum--;
+                remainingServiceTime[processIndex]--;
+                timeline[temp++][processIndex]='*';
+            }
+
+            if(remainingServiceTime[processIndex]==0){
+                finishTime[processIndex]=temp;
+                turnAroundTime[processIndex] = (finishTime[processIndex] - arrivalTime);
+                normTurn[processIndex] = (turnAroundTime[processIndex] * 1.0 / serviceTime);
+            }else{
+                if(pq.size()>=1)
+                    pq.push(make_pair(priorityLevel+1,processIndex));
+                else
+                    pq.push(make_pair(priorityLevel,processIndex));
+            }
+            time = temp-1;
+        }
+        while(j<process_count && getArrivalTime(processes[j])<=time+1){
+                pq.push(make_pair(0,j));
+                remainingServiceTime[j]=getServiceTime(processes[j]);
+                j++;
+        }
+    }
+    fillInWaitTime();
+}
+
+void aging(int originalQuantum)
+{
+    vector<tuple<int,int,int>>v; 
+    int j=0,currentProcess=-1;
+    for(int time =0;time<last_instant;time++){
+        while(j<process_count && getArrivalTime(processes[j])<=time){
+            v.push_back(make_tuple(getPriorityLevel(processes[j]),j,0));
+            j++;
+        }
+
+        for(int i=0;i<v.size();i++){
+            if(get<1>(v[i])==currentProcess){
+                get<2>(v[i])=0;
+                get<0>(v[i])=getPriorityLevel(processes[currentProcess]);
+            }
+            else{
+                get<0>(v[i])++;
+                get<2>(v[i])++;
+            }
+        }
+        sort(v.begin(),v.end(),byPriorityLevel);
+        currentProcess=get<1>(v[0]);
+        int currentQuantum = originalQuantum;
+        while(currentQuantum-- && time<last_instant){
+            timeline[time][currentProcess]='*';
+            time++;
+        }
+        time--;
+    }
+    fillInWaitTime();
+}
+
+void printAlgorithm(int algorithm_index)
+{
+    int algorithm_id = algorithms[algorithm_index].first - '0';
+    if(algorithm_id==2)
+        cout << ALGORITHMS[algorithm_id] <<algorithms[algorithm_index].second <<endl;
+    else
+        cout << ALGORITHMS[algorithm_id] << endl;
+}
+
+void printProcesses()
+{
+    cout << "Process    ";
+    for (int i = 0; i < process_count; i++)
+        cout << "|  " << getProcessName(processes[i]) << "  ";
+    cout << "|\n";
+}
+void printArrivalTime()
+{
+    cout << "Arrival    ";
+    for (int i = 0; i < process_count; i++)
+        printf("|%3d  ",getArrivalTime(processes[i]));
+    cout<<"|\n";
+}
+void printServiceTime()
+{
+    cout << "Service    |";
+    for (int i = 0; i < process_count; i++)
+        printf("%3d  |",getServiceTime(processes[i]));
+    cout << " Mean|\n";
+}
+void printFinishTime()
+{
+    cout << "Finish     ";
+    for (int i = 0; i < process_count; i++)
+        printf("|%3d  ",finishTime[i]);
+    cout << "|-----|\n";
+}
+void printTurnAroundTime()
+{
+    cout << "Turnaround |";
+    int sum = 0;
+    for (int i = 0; i < process_count; i++)
+    {
+        printf("%3d  |",turnAroundTime[i]);
+        sum += turnAroundTime[i];
+    }
+    if((1.0 * sum / turnAroundTime.size())>=10)
+		printf("%2.2f|\n",(1.0 * sum / turnAroundTime.size()));
+    else
+	 	printf(" %2.2f|\n",(1.0 * sum / turnAroundTime.size()));
+}
+
+void printNormTurn()
+{
+    cout << "NormTurn   |";
+    float sum = 0;
+    for (int i = 0; i < process_count; i++)
+    {
+        if( normTurn[i]>=10 )
+            printf("%2.2f|",normTurn[i]);
+        else
+            printf(" %2.2f|",normTurn[i]);
+        sum += normTurn[i];
+    }
+
+    if( (1.0 * sum / normTurn.size()) >=10 )
+        printf("%2.2f|\n",(1.0 * sum / normTurn.size()));
+	else
+        printf(" %2.2f|\n",(1.0 * sum / normTurn.size()));
+}
+void printStats(int algorithm_index)
+{
+    printAlgorithm(algorithm_index);
+    printProcesses();
+    printArrivalTime();
+    printServiceTime();
+    printFinishTime();
+    printTurnAroundTime();
+    printNormTurn();
+}
+
+void printTimeline(int algorithm_index)
+{
+    for (int i = 0; i <= last_instant; i++)
+        cout << i % 10<<" ";
+    cout <<"\n";
+    cout << "------------------------------------------------\n";
+    for (int i = 0; i < process_count; i++)
+    {
+        cout << getProcessName(processes[i]) << "     |";
+        for (int j = 0; j < last_instant; j++)
+        {
+            cout << timeline[j][i]<<"|";
+        }
+        cout << " \n";
+    }
+    cout << "------------------------------------------------\n";
+}
+
+void execute_algorithm(char algorithm_id, int quantum,string operation)
+{
+    switch (algorithm_id)
+    {
+    case '1':
+        if(operation==TRACE)cout<<"FCFS  ";
         firstComeFirstServe();
-    else if (algorithm == "RR")
-        roundRobin(timeQuantum);
-    else if (algorithm == "SPN")
+        break;
+    case '2':
+        if(operation==TRACE)cout<<"RR-"<<quantum<<"  ";
+        roundRobin(quantum);
+        break;
+    case '3':
+        if(operation==TRACE)cout<<"SPN   ";
         shortestProcessNext();
-    else if (algorithm == "SRT")
+        break;
+    case '4':
+        if(operation==TRACE)cout<<"SRT   ";
         shortestRemainingTime();
-    else if (algorithm == "HRRN")
+        break;
+    case '5':
+        if(operation==TRACE)cout<<"HRRN  ";
         highestResponseRatioNext();
-
-    printResults();
+        break;
+    case '6':
+        if(operation==TRACE)cout<<"FB-1  ";
+        feedbackQ1();
+        break;
+    case '7':
+        if(operation==TRACE)cout<<"FB-2i ";
+        feedbackQ2i();
+        break;
+    case '8':
+        if(operation==TRACE)cout<<"Aging ";
+        aging(quantum);
+        break;
+    default:
+        break;
+    }
 }
 
-int main(int argc, char *argv[])
+int main()
 {
-    if (argc < 3)
+    parse();
+    for (int idx = 0; idx < (int)algorithms.size(); idx++)
     {
-        cout << "Usage: " << argv[0] << " <input_file> <algorithm> [time_quantum]\n";
-        return 1;
+        clear_timeline();
+        execute_algorithm(algorithms[idx].first, algorithms[idx].second,operation);
+        if (operation == TRACE)
+            printTimeline(idx);
+        else if (operation == SHOW_STATISTICS)
+            printStats(idx);
+        cout << "\n";
     }
-
-    string input_file = argv[1];
-    string algorithm = argv[2];
-    int timeQuantum = 1;
-
-    if (argc == 4)
-        timeQuantum = stoi(argv[3]);
-
-    if (!parseFile(input_file))
-    {
-        cout << "Error reading file\n";
-        return 1;
-    }
-
-    execute(algorithm, timeQuantum);
-
     return 0;
 }

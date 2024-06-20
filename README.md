@@ -1,117 +1,84 @@
-- # Name - Hardik Advani
-- # Enrollment No - 22113055
-- # Branch - Production and Industrial Engineering
-- # Project - CPU Scheduler
-- 
+- ## Name - Hardik Advani
+- ## Enrollment No - 22113055
+- ## Branch - Production and Industrial Engineering
+- ## Project - CPU Scheduler
+  
 # CPU-Scheduling-Algorithms
-An implementation of various CPU scheduling algorithms in C++. The algorithms included are First Come First Serve (FCFS), Round Robin (RR), Shortest Process Next (SPN), Shortest Remaining Time (SRT), Highest Response Ratio Next (HRRN), Feedback (FB) and Aging.
+This C++ program implements several CPU scheduling algorithms. Included algorithms are First Come First Serve (FCFS), Round Robin (RR), Shortest Process Next (SPN), Shortest Remaining Time (SRT), Highest Response Ratio Next (HRRN), Feedback (FB), and Aging.
 
 ## Table of Contents
-- [CPU-Scheduling-Algorithms](#cpu-scheduling-algorithms)
-  - [Algorithms](#algorithms)
-    - [First Come First Serve (FCFS)](#first-come-first-serve-fcfs)
-    - [Round Robin with varying time quantum (RR)](#round-robin-with-varying-time-quantum-rr)
-    - [Shortest Process Next (SPN)](#shortest-process-next-spn)
-    - [Shortest Remaining Time (SRT)](#shortest-remaining-time-srt)
-    - [Highest Response Ratio Next (HRRN)](#highest-response-ratio-next-hrrn)
-    - [Feedback (FB)](#feedback-fb)
-    - [Feedback with varying time quantum (FBV)](#feedback-with-varying-time-quantum-fbv)
-    - [Aging](#aging)
-  - [Installation](#installation)
-  - [Input Format](#input-format)
-  - [Contributors](#contributors)
+- [CPU-Scheduling-Algorithms]
+  - [Algorithms]
+    - [Feedback (FB)]
+    - [Round Robin with varying time quantum (RR)]
+    - [Highest Response Ratio Next (HRRN)]
+    - [Shortest Remaining Time (SRT)]
+    - [Shortest Process Next (SPN)]
+    - [Feedback with varying time quantum (FBV)]
+    - [Aging]
+    - [First Come First Serve (FCFS)]
+  - [Installation]
+  - [Input Format]
+  - [TestCases Implemented]
 
-## Algorithms
+## Algorithms Used in the code
 
 ### First Come First Serve (FCFS)
-- First Come First Served (FCFS) is a scheduling algorithm in which the process that arrives first is executed first. It is a simple and easy-to-understand algorithm, but it can lead to poor performance if there are processes with long burst times. This algorithm does not have any mechanism for prioritizing processes, so it is considered a non-preemptive algorithm. In FCFS scheduling, the process that arrives first is executed first, regardless of its burst time or priority. This can lead to poor performance, as longer running processes will block shorter ones from being executed. It is commonly used in batch systems where the order of the processes is important.
+- FCFS, or First Come First Served, is a scheduling algorithm where the first arriving process is the first to be executed. It's straightforward but can result in inefficiency when long-burst processes delay shorter ones. FCFS lacks prioritization, making it a non-preemptive method. Regardless of burst time or priority, the earliest arriving process takes precedence. While common in batch systems where process order matters, FCFS may not optimize overall performance.
 
 ### Round Robin with varying time quantum (RR)
-- Round Robin (RR) with variable quantum is a scheduling algorithm that uses a time-sharing approach to divide CPU time among processes. In this version of RR, the quantum (time slice) is not fixed and can be adjusted depending on the requirements of the processes. This allows processes with shorter burst times to be given smaller quanta and vice versa.
-
-- The algorithm works by maintaining a queue of processes, where each process is given a quantum of time to execute on the CPU. When a process's quantum expires, it is moved to the back of the queue, and the next process in the queue is given a quantum of time to execute.
-
-- The variable quantum allows the algorithm to be more efficient as it allows the CPU to spend more time on shorter processes and less time on longer ones. This can help to minimize the average waiting time for processes. Additionally, it also helps to avoid the issue of starvation, which occurs when a process with a long burst time prevents other processes from executing.
+- Round Robin (RR) with a variable quantum is a CPU scheduling algorithm employing a time-sharing method to allocate CPU time among processes. Unlike traditional RR, where the quantum (time slice) is fixed, this version permits adjusting the quantum dynamically to accommodate process needs. Consequently, shorter-burst processes receive smaller quanta, optimizing resource utilization.
 
 ### Shortest Process Next (SPN)
-- Shortest Process Next (SPN) is a scheduling algorithm that prioritizes the execution of processes based on their burst time, or the amount of time they need to complete their task. It is a non-preemptive algorithm which means that once a process starts executing, it runs until completion or until it enters a waiting state.
+- Shortest Process Next (SPN) is a scheduling algorithm that prioritizes process execution based on their burst time, representing the time required for task completion. It operates non-preemptively, meaning a process continues until it finishes or enters a waiting state.
 
-- The algorithm maintains a queue of processes, where each process is given a burst time when it arrives. The process with the shortest burst time is executed first, and as new processes arrive, they are added to the queue and sorted based on their burst time. The process with the shortest burst time will always be at the front of the queue, and thus will always be executed next.
+- The algorithm manages a process queue, assigning each arrival a burst time. Execution begins with the process boasting the shortest burst time, while subsequent arrivals join the queue, sorted by burst time. Consequently, the process with the shortest burst time remains at the queue's forefront, ensuring its immediate execution.
 
-- This algorithm can be beneficial in situations where the objective is to minimize the average waiting time for processes, since shorter processes will be executed first, and thus will spend less time waiting in the queue. However, it can lead to longer running processes being blocked by shorter ones, which can negatively impact the overall performance of the system.
-
-- In summary, SPN is a scheduling algorithm that prioritizes the execution of processes based on their burst time, it's non-preemptive and it's commonly used in situations where the objective is to minimize the average waiting time for processes.
 ### Shortest Remaining Time (SRT)
-- Shortest Remaining Time Next (SRT) is a scheduling algorithm that is similar to the Shortest Process Next (SPN) algorithm, but it is a preemptive algorithm. This means that once a process starts executing, it can be interrupted by a new process with a shorter remaining time.
+- Shortest Remaining Time Next (SRT) is akin to the Shortest Process Next (SPN) algorithm, but it operates preemptively. This implies that once a process commences execution, it can be interrupted by a newcomer boasting a shorter remaining time.
 
-- The algorithm maintains a queue of processes, where each process is given a burst time when it arrives. The process with the shortest remaining time is executed first, and as new processes arrive, they are added to the queue and sorted based on their remaining time. The process with the shortest remaining time will always be at the front of the queue, and thus will always be executed next.
-
-- This algorithm can be beneficial in situations where the objective is to minimize the average waiting time for processes, since shorter processes will be executed first, and thus will spend less time waiting in the queue. Additionally, it can be useful in situations where the burst time of processes is not known in advance, since the algorithm can adapt to changes in the remaining time as the process is executing.
-
-- In summary, SRT is a scheduling algorithm that prioritizes the execution of processes based on their remaining time, it's a preemptive algorithm, which means that it can interrupt a process that's already executing if a new process with a shorter remaining time arrives and it's commonly used in situations where the objective is to minimize the average waiting time for processes and burst time is not known in advance.
+- The algorithm manages a process queue, assigning burst times upon arrival. Execution begins with the process possessing the shortest remaining time, while subsequent arrivals are incorporated into the queue, organized by their remaining time. Consequently, the process with the shortest remaining time consistently occupies the queue's forefront, ensuring its immediate execution.
 
 ### Highest Response Ratio Next (HRRN)
 
-- Highest Response Ratio Next (HRRN) is a scheduling algorithm that prioritizes the execution of processes based on their response ratio. It is a non-preemptive algorithm which means that once a process starts executing, it runs until completion or until it enters a waiting state.
+- Highest Response Ratio Next (HRRN) is a scheduling algorithm prioritizing process execution according to their response ratio. Operating non-preemptively, once a process begins execution, it continues until completion or a waiting state ensues.
 
-- The response ratio is calculated by taking the ratio of the waiting time of a process and its burst time. The process with the highest response ratio is executed first, and as new processes arrive, they are added to the queue and sorted based on their response ratio. The process with the highest response ratio will always be at the front of the queue, and thus will always be executed next.
-
-- This algorithm can be beneficial in situations where the objective is to minimize the average waiting time for processes, since processes with longer waiting times will be executed first, and thus will spend less time waiting in the queue. Additionally, it can be useful in situations where the burst time of processes is not known in advance, since the algorithm can adapt to changes in the waiting time as the process is executing.
-
-- In summary, HRRN is a scheduling algorithm that prioritizes the execution of processes based on their response ratio, it's non-preemptive and it's commonly used in situations where the objective is to minimize the average waiting time for processes and burst time is not known in advance.
+- The response ratio assesses the waiting time of a process relative to its burst time. Processes are then ranked by their response ratio, with the highest-ranked process executed first. New arrivals are appended to the queue and sorted based on their response ratio. Consequently, the process boasting the highest response ratio perpetually occupies the queue's forefront, ensuring immediate execution.
 
 ### Feedback (FB)
 
-- Feedback is a scheduling algorithm that allocates CPU time to different processes based on their priority level. It is a multi-level priority algorithm that uses multiple priority queues, each with a different priority level.
+ - Feedback is a multi-level priority scheduling algorithm distributing CPU time among processes based on their priority levels. It utilizes several priority queues, each designated for a distinct priority level.
 
-- Processes with higher priority levels are executed first, and as new processes arrive, they are added to the appropriate priority queue based on their priority level. When a process completes execution, it is moved to the next lower priority queue.
-
-- This algorithm can be beneficial in situations where the system needs to handle a mix of short and long-running processes, as well as processes with varying priority levels. By having multiple priority queues, it ensures that processes with higher priority levels are executed first, while also allowing lower-priority processes to eventually be executed.
-
-- In summary, Feedback is a scheduling algorithm that allocates CPU time based on priority levels, it uses multiple priority queues with different levels of priority, processes with higher priority levels are executed first and when process completes execution, it is moved to the next lower priority queue, it's commonly used in situations where system needs to handle a mix of short and long-running processes, as well as processes with varying priority levels.
+ - Processes with higher priorities are granted CPU time foremost. Upon arrival, new processes are placed in the suitable priority queue corresponding to their priority level. Upon completion of execution, a process transitions to the subsequent lower priority queue.
 
 ### Feedback with varying time quantum (FBV)
-- Same as [Feedback](#feedback-fb) but with varying time quantum.
-- Feedback with varying time quantum also uses multiple priority queues and assigns a different time quantum for each priority level, it allows the algorithm to be more efficient by spending more time on higher-priority processes and less time on lower-priority processes.
+
+ - Feedback with varying time quantum employs multiple priority queues, each with a unique time quantum assigned to its priority level. This design enhances algorithm efficiency by allocating more time to higher-priority processes and less time to lower-priority ones.
 
 ### Aging
 
-- Xinu is an operating system developed at Purdue University. The scheduling invariant in Xinu assumes that at any
-time, the highest priority process eligible for CPU service is executing, with round-robin scheduling for processes of
-equal priority. Under this scheduling policy, the processes with the highest priority will always be executing. As a
-result, all the processes with lower priority will never get CPU time. As a result, starvation is produced in Xinu when
-we have two or more processes eligible for execution that have different priorities. For ease of discussion, we call the
-set of processes in the ready list and the current process as the eligible processes.
+ - To mitigate starvation, an aging scheduler is implemented. During each rescheduling operation, such as a timeout, the scheduler elevates the priority of all ready processes by a fixed increment. This strategy prevents starvation by ensuring that each ready process is overlooked by the scheduler only a limited number of times before attaining the highest priority.
 
-- To overcome starvation, an aging scheduler may be used. On each rescheduling operation, a timeout for instance, the
-scheduler increases the priority of all the ready processes by a constant number. This avoids starvation as each ready
-process can be passed over by the scheduler only a finite number of times before it has the highest priority.
-
-- Each process has an initial priority that is assigned to it at process creation. Every time the scheduler is called it takes
-the following steps.
-    - The priority of the current process is set to the initial priority assigned to it.
-    - The priorities of all the ready processes (not the current process) are incremented by 1.
-    - The scheduler choses the highest priority process from among all the eligible processes.
-
-- Note that during each call to the scheduler, the complete ready list has to be traversed.
 ## Installation
-1- Clone the repository
+1. Duplicate the repository to your local machine.
+   
+2. Install the g++ compiler and make utility by executing the following command:
+   ```bash
+   sudo apt-get install g++ make
+   ```
+3. Compile the code by running the `make` command.
 
-2- Install g++ compiler and make
-```bash
-sudo apt-get install g++ make
-```
-3- Compile the code using `make` command
-
-4- Run the executable file
+4. Execute the generated executable file to run the program.
 
 ## Input Format
 - Line 1: "trace" or "stats"
-- Line 2: a comma-separated list telling which CPU scheduling policies to be analyzed/visualized along with
-their parameters, if applicable. Each algorithm is represented by a number as listed in the
-introduction section and as shown in the attached testcases.
-Round Robin and Aging have a parameter specifying the quantum q to be used. Therefore, a policy
-entered as 2-4 means Round Robin with q=4. Also, policy 8-1 means Aging with q=1.
+- Trace: When the scheduler operates in "trace" mode, it provides detailed information or logs about the scheduling decisions made during the execution of the program. This information often includes timestamps, process IDs, CPU bursts, waiting times, and other relevant data points. Trace mode is useful for debugging, performance analysis, or understanding the scheduling behavior of the system.
+
+- Stats: In "stats" mode, the scheduler generates summary statistics or metrics related to the scheduling performance. These statistics may include average waiting time, turnaround time, CPU utilization, throughput, and other performance indicators. Stats mode provides a high-level overview of how well the scheduler is performing in terms of efficiency, fairness, and responsiveness.
+
+- Line 2: The input format specifies a comma-separated list indicating which CPU scheduling policies to analyze or visualize, along with their parameters if applicable. Each algorithm is represented by a number corresponding to the introduction section or the attached test cases.
+
+- For Round Robin and Aging algorithms, a parameter specifies the quantum \( q \) to be utilized. Thus, a policy entered as "2-4" indicates Round Robin with \( q = 4 \), while "8-1" denotes Aging with \( q = 1 \).
  1. FCFS (First Come First Serve)
  2. RR (Round Robin)
  3. SPN (Shortest Process Next)
@@ -120,20 +87,25 @@ entered as 2-4 means Round Robin with q=4. Also, policy 8-1 means Aging with q=1
  6. FB-1, (Feedback where all queues have q=1)
  7. FB-2i, (Feedback where q= 2i)
  8. Aging
-- Line 3: An integer specifying the last instant to be used in your simulation and to be shown on the timeline.
-- Line 4: An integer specifying the number of processes to be simulated.
-- Line 5: Start of description of processes. Each process is to be described on a separate line. For algorithms 1 through 7, each process is described using a comma-separated list specifying:
+- Line 3: The input requires an integer indicating the final instant to be utilized in the simulation and displayed on the timeline. This value determines the duration of the simulation and sets the upper limit for time visualization.
+- Line 4: The input expects an integer indicating the number of processes to simulate. This value determines the quantity of processes to be included in the simulation, influencing the complexity and duration of the analysis.
+- Line 5: The description of processes begins, with each process detailed on a separate line. For algorithms 1 through 7, each process is delineated by a comma-separated list containing:
 
-    1- String specifying a process name\
-    2- Arrival Time\
-    3- Service Time
+1. A string denoting the process name.
+2. The arrival time of the process.
+3. The service time required by the process.
+   
+### Testcases
 
-- **Note:** For Aging algorithm (algorithm 8), each process is described using a comma-separated list specifying:
+![Screenshot 2024-06-20 204126](https://github.com/hargit19/CPU-Scheduler-ACM-Open/assets/127594594/e01f4e1d-de42-4e2f-be3f-0d90135e0979)
 
-    1- String specifying a process name\
-    2- Arrival Time\
-    3- Priority
-- Processes are assumed to be sorted based on the arrival time. If two processes have the same arrival time, then the one with the lower priority is assumed to arrive first.
+![Screenshot 2024-06-20 204427](https://github.com/hargit19/CPU-Scheduler-ACM-Open/assets/127594594/a7f7625b-5ec2-4acd-9126-ac37a422dbac)
+
+![Screenshot 2024-06-20 204404](https://github.com/hargit19/CPU-Scheduler-ACM-Open/assets/127594594/8d0ad691-a9bf-4810-aa3f-ee9aa55cef4d)
+
+![Screenshot 2024-06-20 204250](https://github.com/hargit19/CPU-Scheduler-ACM-Open/assets/127594594/97f43fe3-61a5-405b-8130-91ee6bd9f78d)
+
+
 
 
 
